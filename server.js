@@ -2,7 +2,6 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const cors = require('cors');
 const { google } = require('googleapis');
-const fs = require('fs');
 require('dotenv').config();
 
 const app = express();
@@ -13,7 +12,10 @@ app.use(cors({
     allowedHeaders: ['Content-Type']
 }));
 
-// Load client secrets from environment variables.
+// Serve static files from the 'public' directory
+app.use(express.static('public'));
+
+// Load client secrets from environment variables
 const client = new google.auth.JWT(
     process.env.GOOGLE_CLIENT_EMAIL,
     null,
