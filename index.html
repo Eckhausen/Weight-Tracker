@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Weight Tracker</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16.png">
+    <link rel="manifest" href="/site.webmanifest">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+</head>
+<body>
+<div class="container">
+    <h1>Weight and Body Fat Tracker</h1>
+    <div class="content">
+        <div class="form-container">
+            <form id="dataForm">
+                <label for="date">Date:</label>
+                <input type="date" id="date" name="date" required><br>
+                <label for="weight">Weight (kg):</label>
+                <input type="number" id="weight" name="weight" step="0.1" required><br>
+                <label for="bodyFat">Body Fat (%):</label>
+                <input type="number" id="bodyFat" name="bodyFat" step="0.1" required><br>
+                <button type="submit">Submit</button>
+            </form>
+        </div>
+        <div class="chart-container" id="chartContainer">
+            <iframe id="chartIframe" class="chart-iframe" seamless frameborder="0" scrolling="no"
+                    src="https://docs.google.com/spreadsheets/d/e/2PACX-1vQ5ERjcmbB7LNjdbZz91_nSVIT12nYk86p_3Rc8XdkxU25eVGzbvv9xdAZNxZjK9UOB9akcfBqwkQc0/pubchart?oid=1427795237&amp;format=image">
+            </iframe>
+        </div>
+        <div class="iframe-container">
+            <iframe src="https://www.calculator.net/body-fat-calculator.html#topmenu" class="calc-iframe"></iframe>
+        </div>
+    </div>
+</div>
+<script>
+    document.addEventListener('DOMContentLoaded', (event) => {
+        if (Notification.permission !== 'granted') {
+            Notification.requestPermission();
+        }
+
+        // Set the date input to today's date
+        const today = new Date().toISOString().split('T')[0];
+        document.getElementById('date').value = today;
+    });
+
+    document.getElementById('dataForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        const data = {
+            date: document.getElementById('date').value,
+            weight: document.getElementById('weight').value,
+            bodyFat: document.getElementById('bodyFat').value
+        };
+
+        fetch('http://localhost:3000/add', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(data)
+        }).then(response => response.text())
+            .then(data => {
+                alert(data);
+                // Remove the chart iframe to force refresh
+                const chartContainer = document.getElementById('chartContainer');
+                const chartIframe = document.getElementById('chartIframe');
+                chartIframe.style.visibility = 'hidden'; // Hide the iframe during reload
+                setTimeout(() => {
+                    chartIframe.src = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQ5ERjcmbB7LNjdbZz91_nSVIT12nYk86p_3Rc8XdkxU25eVGzbvv9xdAZNxZjK9UOB9akcfBqwkQc0/pubchart?oid=1427795237&format=image&t=' + new Date().getTime();
+                    chartIframe.style.visibility = 'visible'; // Show the iframe after reload
+                }, 3000); // 3-second delay
+            });
+    });
+
+    function showNotification() {
+        if (Notification.permission === 'granted') {
+            new Notification('Daily Reminder', {
+                body: 'Please enter your weight and body fat percentage for today.',
+                icon: 'icon.png'
+            });
+        }
+    }
+
+    function scheduleNotification() {
+        const now = new Date();
+        const nextNotification = new Date();
+        nextNotification.setHours(10, 0, 0, 0);
+
+        if (now > nextNotification) {
+            nextNotification.setDate(now.getDate() + 1);
+        }
+
+        const timeout = nextNotification.getTime() - now.getTime();
+        setTimeout(() => {
+            showNotification();
+            setInterval(showNotification, 24 * 60 * 60 * 1000);
+        }, timeout);
+    }
+
+    scheduleNotification();
+</script>
+</body>
+</html>
