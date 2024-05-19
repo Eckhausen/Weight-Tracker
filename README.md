@@ -1,4 +1,5 @@
 # Weight Tracker
+![bild](https://github.com/Eckhausen/Weight-Tracker/assets/80269043/dcc89771-7589-4aa5-93fb-df343bad5222)
 
 Weight Tracker is a simple web application that allows you to track your weight and body fat percentage over time. The data is stored in a Google Sheets document, and the application displays a chart of your progress.
 ## Features
